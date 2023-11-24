@@ -1,9 +1,9 @@
-# # %%
+#
 # import cv2
 # # from time import sleep
 # # from sys import exit
 
-# # %%
+#
 # def init_cam():
 #     cam = cv2.VideoCapture(0)
 #     print("Starting camera...")
@@ -27,7 +27,7 @@
 #     return cv2.Laplacian(image, cv2.CV_64F).var()
 
 
-# # %%
+#
 # cam, face_cascade = init_cam()
 
 # while True:
@@ -57,9 +57,16 @@
 #     cv2.imshow("Something", image)
 
 
-import pyttsx4
+# import pyttsx4
 
-engine = pyttsx4.init()
-engine.say("Hello how are you doing today?")
-engine.runAndWait()
-del engine
+# engine = pyttsx4.init()
+# engine.say("Hello how are you doing today?")
+# engine.runAndWait()
+# del engine
+
+from time import time, sleep
+
+start = time()
+sleep(1)
+end = time()
+print(end - start)

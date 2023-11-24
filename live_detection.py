@@ -1,33 +1,15 @@
-# %%
 import cv2
-from time import sleep
+from time import time
 import pickle as pk
 import mediapipe as mp
 import pandas as pd
 import pyttsx4
 
-# import warnings
-# warnings.filterwarnings("ignore")
-
-# import TTS
-
-# %%
 from recommendations import check_pose_angle
 from landmarks import extract_landmarks
 from calc_angles import rangles
 
-# %%
-# say USE TTS FFS (recommendations)
-#   say this every 8 secs or something like that
-#   no pose detected
-#   say video not clear
-# consistenly show the output but only take one pic every second or so
-# use resized thingy and pass it to extract_landmarks as well
-# show the pose name right above the bounding box
-# check names
 
-
-# %%
 def init_cam():
     cam = cv2.VideoCapture(0)
     cam.set(cv2.CAP_PROP_AUTOFOCUS, 0)
@@ -49,22 +31,15 @@ def variance_of_laplacian(image):
 
 
 def load_model():
-    return pk.load(open("./models/11_poses.model", "rb"))
+    return pk.load(open("./models/4_poses.model", "rb"))
 
 
 def get_pose_name(index):
     names = {
-        0: "Ardha Chandrasana",
-        1: "Downdog",
-        2: "Goddess",
-        3: "Marjaryasana",
-        4: "Padmasana",
-        5: "Plank",
-        6: "Sivasana",
-        7: "Tree",
-        8: "Urdhvamukha shvanasana",
-        9: "Utkatasana",
-        10: "Warrior"
+        0: "Adho Mukha Svanasana",
+        1: "Phalakasana",
+        2: "Utkata Konasana",
+        3: "Vrikshasana",
     }
     return str(names[index])
 
@@ -106,40 +81,98 @@ def init_dicts():
     return mp.solutions.pose, cols, landmarks_points_array
 
 
-cam = init_cam()
-model = load_model()
-mp_pose, cols, landmarks_points_array = init_dicts()
-angles_df = pd.read_csv("./csv_files/11_poses_angles.csv")
-mp_drawing = mp.solutions.drawing_utils
-engine = pyttsx4.init()
+def tts(engine, message):
+    engine.say(message)
+    engine.runAndWait()
 
-while True:
-    result, image = cam.read()
-    resized = cv2.resize(image, (640, 360), interpolation=cv2.INTER_AREA)
-    key = cv2.waitKey(1)
-    if key == ord("q"):
-        destory_cam(cam=cam)
-        break
-    if result:
-        var = variance_of_laplacian(resized)
-        if var > 30.0:
-            err, df, xy, landmarks, mp_pose = extract_landmarks(
-                resized, mp_pose, cols)
-            if err == False:
-                prediction = model.predict(df)
-                probabilities = model.predict_proba(df)
-                cv2.rectangle(image, (xy[0], xy[1]),
-                              (xy[2], xy[3]), (0, 255, 0), 2)
-                mp_drawing.draw_landmarks(
-                    image, landmarks, mp_pose.POSE_CONNECTIONS)
-                if probabilities.max() > 0.6:
-                    cv2.putText(image, get_pose_name(
-                        prediction[0]), (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 2, (255, 0, 0), 5, cv2.LINE_AA)
-                    angles = rangles(df, landmarks_points_array)
-                    check_pose_angle(prediction[0], angles, angles_df)
-                else:
-                    cv2.putText(image, "No Pose Detected",
-                                (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 2, (255, 0, 0), 5, cv2.LINE_AA)
-                    pass
 
-    cv2.imshow("Something", image)
+def get_time_elapsed(last_exe):
+    # if last_exe == None:
+    #     return 4
+    # return time() - last_exe
+    return 4
+
+
+if __name__ == "__main__":
+    cam = init_cam()
+    model = load_model()
+    mp_pose, cols, landmarks_points_array = init_dicts()
+    angles_df = pd.read_csv("./csv_files/4_poses_angles.csv")
+    mp_drawing = mp.solutions.drawing_utils
+    engine = pyttsx4.init()
+    last_exe = None
+
+    while True:
+        result, image = cam.read()
+        resized = cv2.resize(
+            image,
+            (640, 360),
+            interpolation=cv2.INTER_AREA
+        )
+        key = cv2.waitKey(1)
+        if key == ord("q"):
+            destory_cam(cam=cam)
+            break
+        if result:
+            var = variance_of_laplacian(resized)
+            if var > 30.0:
+                # err, df, xy, landmarks, mp_pose = extract_landmarks(
+                #     resized,
+                #     mp_pose,
+                #     cols
+                # )
+                err, df, landmarks, mp_pose = extract_landmarks(
+                    resized,
+                    mp_pose,
+                    cols
+                )
+                if err == False:
+                    prediction = model.predict(df)
+                    probabilities = model.predict_proba(df)
+                    # cv2.rectangle(
+                    #     image,
+                    #     (xy[0], xy[1]),
+                    #     (xy[2], xy[3]),
+                    #     (0, 255, 0),
+                    #     2
+                    # )
+                    mp_drawing.draw_landmarks(
+                        image,
+                        landmarks,
+                        mp_pose.POSE_CONNECTIONS
+                    )
+                    if get_time_elapsed(last_exe) > 3.0:
+                        if probabilities[0, prediction[0]] > 0.8:
+                            # tts(
+                            #     engine,
+                            #     f"Predicted pose {get_pose_name(prediction[0])}."
+                            # )
+                            cv2.putText(
+                                image,
+                                get_pose_name(prediction[0]),
+                                (50, 50),
+                                cv2.FONT_HERSHEY_SIMPLEX,
+                                2,
+                                (255, 0, 0),
+                                5,
+                                cv2.LINE_AA
+                            )
+                            angles = rangles(df, landmarks_points_array)
+                            suggestions = check_pose_angle(
+                                prediction[0], angles, angles_df)
+                            # tts(engine, suggestions[0])
+                            last_exe = time()
+                        else:
+                            cv2.putText(
+                                image,
+                                "No Pose Detected",
+                                (50, 50),
+                                cv2.FONT_HERSHEY_SIMPLEX,
+                                2,
+                                (255, 0, 0),
+                                5,
+                                cv2.LINE_AA
+                            )
+                            # tts(engine, "No Pose Detected.")
+
+        cv2.imshow("Something", image)

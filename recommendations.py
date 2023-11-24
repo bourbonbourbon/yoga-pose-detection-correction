@@ -1,5 +1,3 @@
-# %%
-# %%
 def init():
     angles_dict = {
         "armpit_left": 0,
@@ -15,17 +13,18 @@ def init():
     }
     return angles_dict
 
-# %%
+
 def error_margin(control, value):
-    if control - 5 <= value <= control + 5:
+    if value in range(control - 5, control + 6):
         return True
     return False
+
 
 def check_joint(angles, joint_name, threshold, body_position):
     angles_dict = init()
     joint_index = angles_dict[joint_name]
 
-    if error_margin(angles[joint_index], threshold):
+    if error_margin(threshold, angles[joint_index]):
         return None
 
     if angles[joint_index] > threshold:
@@ -36,7 +35,6 @@ def check_joint(angles, joint_name, threshold, body_position):
     return None
 
 
-# %%
 def check_pose_angle(pose_index, angles, df):
     result = []
 

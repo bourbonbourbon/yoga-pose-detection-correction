@@ -1,0 +1,12 @@
+wait for 3 seconds before predicting again
+
+use more functions
+
+print the confidence score of all the poses and average them
+
+fix the confidence score value comparison
+
+multiprocessing!!!
+
+lock once a pose is detected for 30 secs
+    and keep making recommendations

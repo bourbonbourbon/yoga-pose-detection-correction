@@ -1,23 +1,23 @@
-# %%
+
 import pandas as pd
 import numpy as np
 import cv2
 
 
-# %%
 def extract_landmarks(image, mp_pose, cols):
     pre_list = []
-    # with mp_pose.Pose(static_image_mode=True, enable_segmentation=True) as pose:
-    with mp_pose.Pose() as pose:
+    with mp_pose.Pose(static_image_mode=True, enable_segmentation=True) as pose:
+    # with mp_pose.Pose() as pose:
         result = pose.process(
             cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
         try:
-            xy = bounding_box(result.pose_landmarks.landmark)
+            # xy = bounding_box(result.pose_landmarks.landmark)
             for landmark in result.pose_landmarks.landmark:
                 pre_list.append(landmark)
             predict = True
         except AttributeError:
-            return True, pd.DataFrame(), [], None, mp_pose
+            # return True, pd.DataFrame(), [], None, mp_pose
+            return True, pd.DataFrame(), None, mp_pose
 
     if predict == True:
         gen1116 = np.array([
@@ -48,20 +48,22 @@ def extract_landmarks(image, mp_pose, cols):
         ]
 
         all_list.extend(gen1116)
-        return False, pd.DataFrame([all_list], columns=cols), xy, result.pose_landmarks, mp_pose
+        # return False, pd.DataFrame([all_list], columns=cols), xy, result.pose_landmarks, mp_pose
+        return False, pd.DataFrame([all_list], columns=cols), result.pose_landmarks, mp_pose
 
-def bounding_box(landmarks):
-    w = 1280
-    h = 720
-    xy = [0, 0, w, h]
-    for landmark in landmarks:
-        x, y = int(landmark.x * w), int(landmark.y * h)
-        if x > xy[0]:
-            xy[0] = x
-        if x < xy[2]:
-            xy[2] = x
-        if y > xy[1]:
-            xy[1] = y
-        if y < xy[3]:
-            xy[3] = y
-    return xy
+
+# def bounding_box(landmarks):
+#     w = 1280
+#     h = 720
+#     xy = [0, 0, w, h]
+#     for landmark in landmarks:
+#         x, y = int(landmark.x * w), int(landmark.y * h)
+#         if x > xy[0]:
+#             xy[0] = x
+#         if x < xy[2]:
+#             xy[2] = x
+#         if y > xy[1]:
+#             xy[1] = y
+#         if y < xy[3]:
+#             xy[3] = y
+#     return xy

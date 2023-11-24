@@ -1,3 +1,0 @@
-OLD: https://drive.google.com/file/d/1lhdeZlmQuLOoQ2OQ2WkVMqLWZSgbPspr/edit
-
-NEW: https://doi.org/10.5281/zenodo.7818789

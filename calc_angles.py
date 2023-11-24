@@ -1,9 +1,7 @@
-# %%
+
 import numpy as np
 
 
-# %%
-# %%
 def angle(p1, p2, p3):
     a = np.array([p1[0], p1[1]])
     b = np.array([p2[0], p2[1]])
@@ -19,7 +17,6 @@ def angle(p1, p2, p3):
     return angle
 
 
-# %%
 def rangles(pose_df, landmarks_points):
     sl = []
     for index, row in pose_df.iterrows():
