@@ -2,11 +2,10 @@ wait for 3 seconds before predicting again
 
 use more functions
 
-print the confidence score of all the poses and average them
-
-fix the confidence score value comparison
-
 multiprocessing!!!
 
 lock once a pose is detected for 30 secs
     and keep making recommendations
+
+make a process for model pred and prob pred (in a while loop) and then create keep showing the last 
+pose detected and show the frame and keep making recommendations

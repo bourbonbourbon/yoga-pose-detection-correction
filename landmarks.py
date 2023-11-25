@@ -17,7 +17,7 @@ def extract_landmarks(image, mp_pose, cols):
             predict = True
         except AttributeError:
             # return True, pd.DataFrame(), [], None, mp_pose
-            return True, pd.DataFrame(), None, mp_pose
+            return True, pd.DataFrame(), None
 
     if predict == True:
         gen1116 = np.array([
@@ -49,7 +49,7 @@ def extract_landmarks(image, mp_pose, cols):
 
         all_list.extend(gen1116)
         # return False, pd.DataFrame([all_list], columns=cols), xy, result.pose_landmarks, mp_pose
-        return False, pd.DataFrame([all_list], columns=cols), result.pose_landmarks, mp_pose
+        return False, pd.DataFrame([all_list], columns=cols), result.pose_landmarks
 
 
 # def bounding_box(landmarks):

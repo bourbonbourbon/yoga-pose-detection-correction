@@ -4,6 +4,7 @@ import pickle as pk
 import mediapipe as mp
 import pandas as pd
 import pyttsx4
+import multiprocessing as mtp
 
 from recommendations import check_pose_angle
 from landmarks import extract_landmarks
@@ -28,10 +29,6 @@ def destory_cam(cam):
 
 def variance_of_laplacian(image):
     return cv2.Laplacian(image, cv2.CV_64F).var()
-
-
-def load_model():
-    return pk.load(open("./models/4_poses.model", "rb"))
 
 
 def get_pose_name(index):
@@ -78,33 +75,53 @@ def init_dicts():
 
     cols = col_names.copy()
 
-    return mp.solutions.pose, cols, landmarks_points_array
+    return cols, landmarks_points_array
 
 
-def tts(engine, message):
-    engine.say(message)
-    engine.runAndWait()
+engine = pyttsx4.init()
+mp_pose = mp.solutions.pose
+
+def tts(tts_q):
+    while True:
+        objects = tts_q.get()
+        if objects is None:
+            break
+        message = objects[0]
+        engine.say(message)
+        engine.runAndWait()
+    print("exited")
+    tts_q.task_done()
+
+
+# def ex_landmarks(ex_landmarks_q):
+#     pass
 
 
 def get_time_elapsed(last_exe):
-    # if last_exe == None:
-    #     return 4
-    # return time() - last_exe
-    return 4
+    return time() - last_exe
 
 
 if __name__ == "__main__":
     cam = init_cam()
-    model = load_model()
-    mp_pose, cols, landmarks_points_array = init_dicts()
+    model = pk.load(open("./models/4_poses.model", "rb"))
+    cols, landmarks_points_array = init_dicts()
     angles_df = pd.read_csv("./csv_files/4_poses_angles.csv")
     mp_drawing = mp.solutions.drawing_utils
-    engine = pyttsx4.init()
-    last_exe = None
+    last_exe = 4
+
+    tts_q = mtp.JoinableQueue()
+    # ex_landmarks_q = mtp.Queue()
+    # ex_landmarks_q.put([None, None, None])
+
+    tts_proc = mtp.Process(target=tts, args=(tts_q, ))
+    tts_proc.start()
+
+    # ex_landmarks = mtp.Process(target=ex_landmarks, args=(ex_landmarks_q, ))
+    # ex_landmarks.start()
 
     while True:
         result, image = cam.read()
-        resized = cv2.resize(
+        resized_image = cv2.resize(
             image,
             (640, 360),
             interpolation=cv2.INTER_AREA
@@ -112,17 +129,22 @@ if __name__ == "__main__":
         key = cv2.waitKey(1)
         if key == ord("q"):
             destory_cam(cam=cam)
+            tts_q.put(None)
+            tts_q.close()
+            tts_q.join_thread()
+            tts_proc.join()
+            # ex_landmarks.join()
             break
         if result:
-            var = variance_of_laplacian(resized)
+            var = variance_of_laplacian(resized_image)
             if var > 30.0:
                 # err, df, xy, landmarks, mp_pose = extract_landmarks(
-                #     resized,
+                #     resized_image,
                 #     mp_pose,
                 #     cols
                 # )
-                err, df, landmarks, mp_pose = extract_landmarks(
-                    resized,
+                err, df, landmarks = extract_landmarks(
+                    resized_image,
                     mp_pose,
                     cols
                 )
@@ -143,10 +165,9 @@ if __name__ == "__main__":
                     )
                     if get_time_elapsed(last_exe) > 3.0:
                         if probabilities[0, prediction[0]] > 0.8:
-                            # tts(
-                            #     engine,
-                            #     f"Predicted pose {get_pose_name(prediction[0])}."
-                            # )
+                            tts_q.put([
+                                f"Predicted pose {get_pose_name(prediction[0])}."
+                            ])
                             cv2.putText(
                                 image,
                                 get_pose_name(prediction[0]),
@@ -160,8 +181,9 @@ if __name__ == "__main__":
                             angles = rangles(df, landmarks_points_array)
                             suggestions = check_pose_angle(
                                 prediction[0], angles, angles_df)
-                            # tts(engine, suggestions[0])
-                            last_exe = time()
+                            tts_q.put([
+                                suggestions[0]
+                            ])
                         else:
                             cv2.putText(
                                 image,
@@ -173,6 +195,9 @@ if __name__ == "__main__":
                                 5,
                                 cv2.LINE_AA
                             )
-                            # tts(engine, "No Pose Detected.")
+                            tts_q.put([
+                                "No Pose Detected."
+                            ])
+                    last_exe = time()
 
         cv2.imshow("Something", image)
