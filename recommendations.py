@@ -15,7 +15,7 @@ def init():
 
 
 def error_margin(control, value):
-    if value in range(control - 5, control + 6):
+    if int(value) in range(control - 10, control + 11):
         return True
     return False
 
@@ -25,12 +25,13 @@ def check_joint(angles, joint_name, threshold, body_position):
     joint_index = angles_dict[joint_name]
 
     if error_margin(threshold, angles[joint_index]):
+        print(threshold, angles[joint_index])
         return None
 
     if angles[joint_index] > threshold:
-        return f"Bring {joint_name.replace('_', ' ')} closer to {body_position}."
+        return f"Bring {' '.join(joint_name.split('_')[::-1])} closer to {body_position}."
     elif angles[joint_index] < threshold:
-        return f"Put {joint_name.replace('_', ' ')} further away from {body_position}."
+        return f"Put {' '.join(joint_name.split('_')[::-1])} further away from {body_position}."
 
     return None
 

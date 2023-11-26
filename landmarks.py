@@ -7,7 +7,6 @@ import cv2
 def extract_landmarks(image, mp_pose, cols):
     pre_list = []
     with mp_pose.Pose(static_image_mode=True, enable_segmentation=True) as pose:
-    # with mp_pose.Pose() as pose:
         result = pose.process(
             cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
         try:
@@ -16,7 +15,6 @@ def extract_landmarks(image, mp_pose, cols):
                 pre_list.append(landmark)
             predict = True
         except AttributeError:
-            # return True, pd.DataFrame(), [], None, mp_pose
             return True, pd.DataFrame(), None
 
     if predict == True:
@@ -48,7 +46,6 @@ def extract_landmarks(image, mp_pose, cols):
         ]
 
         all_list.extend(gen1116)
-        # return False, pd.DataFrame([all_list], columns=cols), xy, result.pose_landmarks, mp_pose
         return False, pd.DataFrame([all_list], columns=cols), result.pose_landmarks
 
 

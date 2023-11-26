@@ -18,7 +18,6 @@ def angle(p1, p2, p3):
 
 
 def rangles(pose_df, landmarks_points):
-    sl = []
     for index, row in pose_df.iterrows():
         landmarks_points["left_shoulder"] = [
             row["left_shoulder_x"], row["left_shoulder_y"]]

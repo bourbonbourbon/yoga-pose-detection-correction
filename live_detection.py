@@ -22,15 +22,6 @@ def init_cam():
     return cam
 
 
-def destory_cam(cam):
-    cv2.destroyAllWindows()
-    cam.release()
-
-
-def variance_of_laplacian(image):
-    return cv2.Laplacian(image, cv2.CV_64F).var()
-
-
 def get_pose_name(index):
     names = {
         0: "Adho Mukha Svanasana",
@@ -53,7 +44,6 @@ def init_dicts():
         "left_heel": 29, "right_heel": 30,
         "left_foot_index": 31, "right_foot_index": 32,
     }
-
     landmarks_points_array = {
         "left_shoulder": [], "right_shoulder": [],
         "left_elbow": [], "right_elbow": [],
@@ -64,7 +54,6 @@ def init_dicts():
         "left_heel": [], "right_heel": [],
         "left_foot_index": [], "right_foot_index": [],
     }
-
     col_names = []
     for i in range(len(landmarks_points.keys())):
         name = list(landmarks_points.keys())[i]
@@ -72,14 +61,12 @@ def init_dicts():
         col_names.append(name + "_y")
         col_names.append(name + "_z")
         col_names.append(name + "_v")
-
     cols = col_names.copy()
-
     return cols, landmarks_points_array
 
 
 engine = pyttsx4.init()
-mp_pose = mp.solutions.pose
+
 
 def tts(tts_q):
     while True:
@@ -89,35 +76,45 @@ def tts(tts_q):
         message = objects[0]
         engine.say(message)
         engine.runAndWait()
-    print("exited")
     tts_q.task_done()
 
 
-# def ex_landmarks(ex_landmarks_q):
-#     pass
+def cv2_put_text(image, message):
+    cv2.putText(
+        image,
+        message,
+        (50, 50),
+        cv2.FONT_HERSHEY_SIMPLEX,
+        2,
+        (255, 0, 0),
+        5,
+        cv2.LINE_AA
+    )
 
 
-def get_time_elapsed(last_exe):
-    return time() - last_exe
+def destory(cam, tts_proc, tts_q):
+    cv2.destroyAllWindows()
+    cam.release()
+    tts_q.put(None)
+    tts_q.close()
+    tts_q.join_thread()
+    tts_proc.join()
 
 
 if __name__ == "__main__":
     cam = init_cam()
     model = pk.load(open("./models/4_poses.model", "rb"))
     cols, landmarks_points_array = init_dicts()
-    angles_df = pd.read_csv("./csv_files/4_poses_angles.csv")
+    angles_df = pd.read_csv("./csv_files/4_angles_poses_angles.csv")
     mp_drawing = mp.solutions.drawing_utils
-    last_exe = 4
+    mp_pose = mp.solutions.pose
 
     tts_q = mtp.JoinableQueue()
-    # ex_landmarks_q = mtp.Queue()
-    # ex_landmarks_q.put([None, None, None])
 
     tts_proc = mtp.Process(target=tts, args=(tts_q, ))
     tts_proc.start()
 
-    # ex_landmarks = mtp.Process(target=ex_landmarks, args=(ex_landmarks_q, ))
-    # ex_landmarks.start()
+    tts_last_exec = time() + 5
 
     while True:
         result, image = cam.read()
@@ -126,78 +123,48 @@ if __name__ == "__main__":
             (640, 360),
             interpolation=cv2.INTER_AREA
         )
+
         key = cv2.waitKey(1)
         if key == ord("q"):
-            destory_cam(cam=cam)
-            tts_q.put(None)
-            tts_q.close()
-            tts_q.join_thread()
-            tts_proc.join()
-            # ex_landmarks.join()
+            destory(cam, tts_proc, tts_q)
             break
-        if result:
-            var = variance_of_laplacian(resized_image)
-            if var > 30.0:
-                # err, df, xy, landmarks, mp_pose = extract_landmarks(
-                #     resized_image,
-                #     mp_pose,
-                #     cols
-                # )
-                err, df, landmarks = extract_landmarks(
-                    resized_image,
-                    mp_pose,
-                    cols
-                )
-                if err == False:
-                    prediction = model.predict(df)
-                    probabilities = model.predict_proba(df)
-                    # cv2.rectangle(
-                    #     image,
-                    #     (xy[0], xy[1]),
-                    #     (xy[2], xy[3]),
-                    #     (0, 255, 0),
-                    #     2
-                    # )
-                    mp_drawing.draw_landmarks(
-                        image,
-                        landmarks,
-                        mp_pose.POSE_CONNECTIONS
-                    )
-                    if get_time_elapsed(last_exe) > 3.0:
-                        if probabilities[0, prediction[0]] > 0.8:
-                            tts_q.put([
-                                f"Predicted pose {get_pose_name(prediction[0])}."
-                            ])
-                            cv2.putText(
-                                image,
-                                get_pose_name(prediction[0]),
-                                (50, 50),
-                                cv2.FONT_HERSHEY_SIMPLEX,
-                                2,
-                                (255, 0, 0),
-                                5,
-                                cv2.LINE_AA
-                            )
-                            angles = rangles(df, landmarks_points_array)
-                            suggestions = check_pose_angle(
-                                prediction[0], angles, angles_df)
-                            tts_q.put([
-                                suggestions[0]
-                            ])
-                        else:
-                            cv2.putText(
-                                image,
-                                "No Pose Detected",
-                                (50, 50),
-                                cv2.FONT_HERSHEY_SIMPLEX,
-                                2,
-                                (255, 0, 0),
-                                5,
-                                cv2.LINE_AA
-                            )
-                            tts_q.put([
-                                "No Pose Detected."
-                            ])
-                    last_exe = time()
 
-        cv2.imshow("Something", image)
+        if result:
+            err, df, landmarks = extract_landmarks(
+                resized_image,
+                mp_pose,
+                cols
+            )
+
+            if err == False:
+                prediction = model.predict(df)
+                probabilities = model.predict_proba(df)
+
+                mp_drawing.draw_landmarks(
+                    image,
+                    landmarks,
+                    mp_pose.POSE_CONNECTIONS
+                )
+
+                if probabilities[0, prediction[0]] > 0.85:
+                    cv2_put_text(
+                        image,
+                        get_pose_name(prediction[0])
+                    )
+
+                    angles = rangles(df, landmarks_points_array)
+                    suggestions = check_pose_angle(
+                        prediction[0], angles, angles_df)
+
+                    if time() > tts_last_exec:
+                        tts_q.put([
+                            suggestions[0]
+                        ])
+                        tts_last_exec = time() + 5
+
+                else:
+                    cv2_put_text(
+                        image,
+                        "No Pose Detected"
+                    )
+            cv2.imshow("Frame", image)

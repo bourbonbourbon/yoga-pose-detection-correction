@@ -160,6 +160,6 @@ cython_debug/
 #.idea/
 
 poses_dataset/Images
-poses_dataset/test
+poses_dataset/angles
 DATASET*
 Yoga-82*
