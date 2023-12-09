@@ -118,6 +118,7 @@ if __name__ == "__main__":
 
     while True:
         result, image = cam.read()
+        flipped = cv2.flip(image, 1)
         resized_image = cv2.resize(
             image,
             (640, 360),
@@ -141,14 +142,14 @@ if __name__ == "__main__":
                 probabilities = model.predict_proba(df)
 
                 mp_drawing.draw_landmarks(
-                    image,
+                    flipped,
                     landmarks,
                     mp_pose.POSE_CONNECTIONS
                 )
 
                 if probabilities[0, prediction[0]] > 0.85:
                     cv2_put_text(
-                        image,
+                        flipped,
                         get_pose_name(prediction[0])
                     )
 
@@ -164,7 +165,7 @@ if __name__ == "__main__":
 
                 else:
                     cv2_put_text(
-                        image,
+                        flipped,
                         "No Pose Detected"
                     )
-            cv2.imshow("Frame", image)
+            cv2.imshow("Frame", flipped)

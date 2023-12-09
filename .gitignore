@@ -161,5 +161,5 @@ cython_debug/
 
 poses_dataset/Images
 poses_dataset/angles
-DATASET*
+dataset*
 Yoga-82*
