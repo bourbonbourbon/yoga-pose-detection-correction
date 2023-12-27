@@ -15,7 +15,7 @@ def init():
 
 
 def error_margin(control, value):
-    if int(value) in range(control - 10, control + 11):
+    if int(value) in range(control - 20, control + 21):
         return True
     return False
 
@@ -25,7 +25,6 @@ def check_joint(angles, joint_name, threshold, body_position):
     joint_index = angles_dict[joint_name]
 
     if error_margin(threshold, angles[joint_index]):
-        print(threshold, angles[joint_index])
         return None
 
     if angles[joint_index] > threshold:
@@ -41,63 +40,63 @@ def check_pose_angle(pose_index, angles, df):
 
     result.append(check_joint(
         angles,
-        "armpit_left",
+        "armpit_right",
         int(df.loc[pose_index, "armpit_left"]),
         "body"
     ))
     result.append(check_joint(
         angles,
-        "armpit_right",
+        "armpit_left",
         int(df.loc[pose_index, "armpit_right"]),
         "body"
     ))
     result.append(check_joint(
         angles,
-        "elbow_left",
+        "elbow_right",
         int(df.loc[pose_index, "elbow_left"]),
         "arm"
     ))
     result.append(check_joint(
         angles,
-        "elbow_right",
+        "elbow_left",
         int(df.loc[pose_index, "elbow_right"]),
         "arm"
     ))
     result.append(check_joint(
         angles,
-        "hip_left",
+        "hip_right",
         int(df.loc[pose_index, "hip_left"]),
         "pelvis"
     ))
     result.append(check_joint(
         angles,
-        "hip_right",
+        "hip_left",
         int(df.loc[pose_index, "hip_right"]),
         "pelvis"
     ))
     result.append(check_joint(
         angles,
-        "knee_left",
+        "knee_right",
         int(df.loc[pose_index, "knee_left"]),
         "calf"
     ))
     result.append(check_joint(
         angles,
-        "knee_right",
+        "knee_left",
         int(df.loc[pose_index, "knee_right"]),
         "calf"
     ))
     result.append(check_joint(
         angles,
-        "ankle_left",
+        "ankle_right",
         int(df.loc[pose_index, "ankle_left"]),
-        "ankle"
+        "foot"
     ))
     result.append(check_joint(
         angles,
-        "ankle_right",
+        "ankle_left",
         int(df.loc[pose_index, "ankle_right"]),
-        "ankle"
+        "foot"
     ))
 
     return [message for message in result if message is not None]

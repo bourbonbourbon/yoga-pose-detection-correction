@@ -120,7 +120,7 @@ if __name__ == "__main__":
         result, image = cam.read()
         flipped = cv2.flip(image, 1)
         resized_image = cv2.resize(
-            image,
+            flipped,
             (640, 360),
             interpolation=cv2.INTER_AREA
         )
