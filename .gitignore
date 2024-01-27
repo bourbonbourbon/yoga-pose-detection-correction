@@ -159,8 +159,12 @@ cython_debug/
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
 
-csv_files/*.csv
-models/*.model
+csv_files/*
+!csv_files/.gitkeep
+models/*
+!models/.gitkeep
 poses_dataset/angles/*
+!poses_dataset/angles/.gitkeep
 poses_dataset/Images/*
+!poses_dataset/Images/.gitkeep
 poses_dataset.7z
