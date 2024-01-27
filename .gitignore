@@ -159,8 +159,8 @@ cython_debug/
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
 
-csv_files/*
-models/*
+csv_files/*.csv
+models/*.model
 poses_dataset/angles/*
 poses_dataset/Images/*
 poses_dataset.7z
