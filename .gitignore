@@ -167,4 +167,3 @@ poses_dataset/angles/*
 !poses_dataset/angles/.gitkeep
 poses_dataset/Images/*
 !poses_dataset/Images/.gitkeep
-poses_dataset.7z
