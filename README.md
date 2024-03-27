@@ -12,6 +12,8 @@ Preferably the images should be JPG/JPEG and the image names should be `[number]
 6. Change these variables in `live_detection.py` https://github.com/bourbonbourbon/yoga-pose-detection-correction/blob/main/live_detection.py#L106 https://github.com/bourbonbourbon/yoga-pose-detection-correction/blob/main/live_detection.py#L108 to whatever you have created in steps 4 and 5.
 7. Finally change this dictionary to match whatever pose names you want. https://github.com/bourbonbourbon/yoga-pose-detection-correction/blob/main/live_detection.py#L26
 
+Notes: Refer https://github.com/bourbonbourbon/yoga-pose-detection-correction/tree/1c9a4e50c00be9a8b677632901e6b8b0c459b6f4 for project structure.
+
 #### Setup
 
 1. Create a python virtual environment.
